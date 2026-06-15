@@ -1,0 +1,36 @@
+{
+  "sequence_name": "ReportForge AI — Onboarding",
+  "description": "5-email onboarding drip for new ReportForge trial users. Converts free-trial to paid.",
+  "emails": [
+    {
+      "position": 1,
+      "delay_days": 0,
+      "subject": "Your first intelligence brief is waiting",
+      "body_html": "<p>Hey {{subscriber.first_name | default: 'there'}},</p><p>Welcome to ReportForge AI — the fastest path from market question to market intelligence.</p><p><strong>Start here:</strong></p><ol><li>Go to your dashboard: <a href='{{your_app_url}}'>{{your_app_url}}</a></li><li>Enter a market you're curious about (specific beats broad)</li><li>Hit generate — your brief is ready in under 60 seconds</li></ol><p><em>Quick tip:</em> Try a market you already know well first. You'll be both impressed and usefully surprised by what surfaces.</p><p>Your first report is on me.</p><p>— The ReportForge Team</p><p style='font-size:12px;color:#999;'>P.S. Hit reply and tell me what you're analyzing. I read every response.</p>"
+    },
+    {
+      "position": 2,
+      "delay_days": 3,
+      "subject": "How Marcus closed a $12,000 contract in 48 hours",
+      "body_html": "<p>Hey {{subscriber.first_name | default: 'there'}},</p><p>Marcus is a freelance strategy consultant. Before ReportForge AI, writing market context for a proposal took him half a day.</p><p>Last week a client called — entering the pet insurance market in Germany. Needed a brief by Friday.</p><p>Marcus ran one ReportForge report. <strong>60 seconds.</strong> Used it as the research backbone for his proposal.</p><p>He won the $12,000 contract.</p><blockquote style='border-left:3px solid #F59E0B;padding-left:16px;color:#666;'><em>\"I now spend proposal time on strategy — the part clients actually pay for.\"</em><br>— Marcus D., Freelance Consultant</blockquote><p>What market are you looking at right now?</p><p><a href='{{your_app_url}}'>Generate your next report →</a></p><p>— The ReportForge Team</p>"
+    },
+    {
+      "position": 3,
+      "delay_days": 6,
+      "subject": "3 things users didn't expect about ReportForge",
+      "body_html": "<p>Hey {{subscriber.first_name | default: 'there'}},</p><p>Three things that consistently surprise new users:</p><p><strong>1. It handles hyper-niche markets</strong><br>Not just \"electric vehicles\" — try \"electric cargo bikes for last-mile delivery in Southeast Asia.\" You get real dynamics, not generic filler.</p><p><strong>2. The risk matrix is decision-ready</strong><br>Risks structured by probability × impact. A framework, not just a list.</p><p><strong>3. You can run 10 markets in an hour</strong><br>Founder Sarah ran 7 market validation reports in one session, ranked them by opportunity gap and competition density, and picked her winner. From idea to decision: under 2 hours.</p><p>How many markets have you analyzed so far? Hit reply — genuinely curious.</p><p>— The ReportForge Team</p>"
+    },
+    {
+      "position": 4,
+      "delay_days": 10,
+      "subject": "The $500/hour problem hiding in your workflow",
+      "body_html": "<p>Hey {{subscriber.first_name | default: 'there'}},</p><p>How much is your time worth per hour?</p><p>How long does market research normally take you — from scratch?</p><p>If you're spending 2–4 hours on research ReportForge handles in 60 seconds, you're losing real money on every sprint.</p><p>Our Pro users run ~8 reports/month. That's 16–32 hours recovered. <strong>Monthly.</strong></p><p>One upgrade unlocks: unlimited reports, API access, custom branding for client deliverables.</p><p><a href='{{upgrade_url}}' style='background:#F59E0B;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block;margin-top:8px;'>Upgrade to Intelligence — $79/mo →</a></p><p>— The ReportForge Team</p>"
+    },
+    {
+      "position": 5,
+      "delay_days": 14,
+      "subject": "Founding member pricing closes in 48 hours",
+      "body_html": "<p>Hey {{subscriber.first_name | default: 'there'}},</p><p>When we publicly launch next week, ReportForge AI goes to standard pricing.</p><p>Until then, founding members lock in <strong>$49/month for the Intelligence plan</strong> (normal price: $79) — permanently.</p><p>Last time we're offering this.</p><p><a href='{{upgrade_url}}' style='background:#F59E0B;color:#000;padding:12px 24px;border-radius:8px;text-decoration:none;font-weight:700;display:inline-block;'>Lock in founding member pricing →</a></p><p>What you get:</p><ul><li>✅ Unlimited reports (no monthly cap, ever)</li><li>✅ API access — embed reports into your own tools</li><li>✅ Custom branding — your logo on client deliverables</li><li>✅ Priority generation queue</li><li>✅ All future features included</li></ul><p>48 hours. Then it's gone.</p><p>— The ReportForge Team</p>"
+    }
+  ]
+}
