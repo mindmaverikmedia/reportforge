@@ -1,106 +1,90 @@
 /**
- * /api/ls-setup — One-time Lemon Squeezy product creation
- * Call once: https://reportforge-2ap7.vercel.app/api/ls-setup
- * Creates all 3 subscription products + variants, returns checkout URLs
+ * /api/ls-setup
+ * Lists all Lemon Squeezy products + variants and returns checkout URLs.
+ * Create your products in the LS dashboard first, then call this endpoint.
  */
 export default async function handler(req, res) {
   if (req.method !== 'GET') return res.status(405).json({ error: 'GET only' });
 
   const LS_KEY = process.env.LEMONSQUEEZY_API_KEY;
-  if (!LS_KEY) return res.status(500).json({ error: 'LEMONSQUEEZY_API_KEY not set in Vercel env vars' });
+  if (!LS_KEY) return res.status(500).json({ error: 'LEMONSQUEEZY_API_KEY not set' });
 
   const BASE = 'https://api.lemonsqueezy.com/v1';
   const headers = {
     'Authorization': `Bearer ${LS_KEY}`,
     'Accept': 'application/vnd.api+json',
-    'Content-Type': 'application/vnd.api+json',
   };
 
-  const api = async (path, method = 'GET', body) => {
-    const r = await fetch(`${BASE}${path}`, {
-      method, headers,
-      body: body ? JSON.stringify(body) : undefined,
-    });
+  const api = async (path) => {
+    const r = await fetch(`${BASE}${path}`, { headers });
     return r.json();
   };
 
   try {
-    // 1. Get store
+    // Get store
     const storesRes = await api('/stores');
     const store = storesRes.data?.[0];
-    if (!store) return res.status(400).json({ error: 'No store found. Create a store at app.lemonsqueezy.com first.' });
-
+    if (!store) return res.status(400).json({ error: 'No store found.' });
     const storeId = store.id;
     const storeSlug = store.attributes.slug;
-    console.log(`Store: ${store.attributes.name} (${storeSlug})`);
 
-    // 2. Define our 3 plans
-    const plans = [
-      { name: 'ReportForge Analyst', desc: '5 market research reports/month for individual strategists', price: 2900 },
-      { name: 'ReportForge Intelligence', desc: 'Unlimited reports, API access, custom branding for teams', price: 7900 },
-      { name: 'ReportForge Enterprise', desc: 'Unlimited reports, white-label, 10 seats, agencies & funds', price: 24900 },
-    ];
+    // Get all products for this store
+    const productsRes = await api(`/products?filter[store_id]=${storeId}`);
+    const products = productsRes.data || [];
 
-    const results = [];
-
-    for (const plan of plans) {
-      // 3. Create product
-      const productRes = await api('/products', 'POST', {
-        data: {
-          type: 'products',
-          attributes: { name: plan.name, description: plan.desc },
-          relationships: { store: { data: { type: 'stores', id: storeId } } },
-        },
+    if (products.length === 0) {
+      return res.status(200).json({
+        ready: false,
+        store: { id: storeId, slug: storeSlug, name: store.attributes.name },
+        message: 'No products found. Create your 3 plans in the Lemon Squeezy dashboard first.',
+        dashboardUrl: 'https://app.lemonsqueezy.com/products',
+        instructions: [
+          '1. Go to https://app.lemonsqueezy.com/products',
+          '2. Click "New product" — create "ReportForge Analyst" at $29/month (subscription)',
+          '3. Click "New product" — create "ReportForge Intelligence" at $79/month (subscription)',
+          '4. Click "New product" — create "ReportForge Enterprise" at $249/month (subscription)',
+          '5. Come back and call this endpoint again to get your checkout URLs',
+        ],
       });
-
-      const productId = productRes.data?.id;
-      if (!productId) {
-        results.push({ plan: plan.name, error: JSON.stringify(productRes).slice(0, 200) });
-        continue;
-      }
-
-      // 4. Create monthly subscription variant
-      const variantRes = await api('/variants', 'POST', {
-        data: {
-          type: 'variants',
-          attributes: {
-            name: 'Monthly',
-            price: plan.price,
-            is_subscription: true,
-            interval: 'month',
-            interval_count: 1,
-            status: 'published',
-          },
-          relationships: { product: { data: { type: 'products', id: productId } } },
-        },
-      });
-
-      const variantId = variantRes.data?.id;
-      const checkoutUrl = variantId
-        ? `https://${storeSlug}.lemonsqueezy.com/checkout/buy/${variantId}`
-        : null;
-
-      results.push({
-        plan: plan.name,
-        productId,
-        variantId,
-        checkoutUrl,
-        price: `$${plan.price / 100}/mo`,
-      });
-
-      console.log(`✅ ${plan.name}: variant ${variantId}`);
     }
 
-    // 5. Return everything needed
+    // Get variants for each product
+    const results = [];
+    for (const product of products) {
+      const variantsRes = await api(`/variants?filter[product_id]=${product.id}`);
+      const variants = variantsRes.data || [];
+      const activeVariant = variants.find(v => v.attributes.status === 'published') || variants[0];
+
+      results.push({
+        name: product.attributes.name,
+        productId: product.id,
+        variantId: activeVariant?.id,
+        price: activeVariant ? `$${(activeVariant.attributes.price / 100).toFixed(2)}/mo` : 'no variant',
+        checkoutUrl: activeVariant
+          ? `https://${storeSlug}.lemonsqueezy.com/checkout/buy/${activeVariant.id}`
+          : null,
+        status: product.attributes.status,
+      });
+    }
+
+    // Build env var block
+    const envBlock = results.map(r => {
+      const key = r.name
+        .replace('ReportForge ', '')
+        .toUpperCase()
+        .replace(/\s+/g, '_');
+      return `LS_URL_${key}=${r.checkoutUrl}`;
+    }).join('\n');
+
     return res.status(200).json({
-      success: true,
-      store: { id: storeId, slug: storeSlug, name: store.attributes.name },
+      ready: true,
+      store: { slug: storeSlug, name: store.attributes.name },
       products: results,
-      nextStep: 'Copy the checkoutUrls and add them as Vercel env vars: LS_URL_ANALYST, LS_URL_INTELLIGENCE, LS_URL_ENTERPRISE. Then redeploy.',
-      envVars: results.map(r => `LS_URL_${r.plan.replace('ReportForge ', '').toUpperCase()} = ${r.checkoutUrl}`).join('\n'),
+      addToVercel: envBlock,
+      instruction: 'Copy the addToVercel block into Vercel → Settings → Environment Variables, then redeploy.',
     });
 
   } catch (err) {
-    return res.status(500).json({ error: err.message, stack: err.stack?.split('\n').slice(0, 5) });
+    return res.status(500).json({ error: err.message });
   }
 }
