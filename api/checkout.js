@@ -5,9 +5,9 @@
 
 // Checkout URLs — set from Lemon Squeezy dashboard (variant IDs)
 const CHECKOUT_URLS = {
-  ANALYST:      process.env.LS_URL_ANALYST      || "https://reportforgemaverik.lemonsqueezy.com/buy/1796175",
-  INTELLIGENCE: process.env.LS_URL_INTELLIGENCE || "https://reportforgemaverik.lemonsqueezy.com/buy/1796186",
-  ENTERPRISE:   process.env.LS_URL_ENTERPRISE   || "https://reportforgemaverik.lemonsqueezy.com/buy/1796192",
+  ANALYST:      process.env.LS_URL_ANALYST      || "https://reportforgemaverik.lemonsqueezy.com/checkout/buy/32fcdaa0-5bc1-4a7b-b0a9-a0b0c730e00e",
+  INTELLIGENCE: process.env.LS_URL_INTELLIGENCE || "https://reportforgemaverik.lemonsqueezy.com/checkout/buy/5cbe259a-4ebe-4960-8942-a45a02109338",
+  ENTERPRISE:   process.env.LS_URL_ENTERPRISE   || "https://reportforgemaverik.lemonsqueezy.com/checkout/buy/683761df-c4ce-4de1-949d-a2cd94010b78",
 };
 
 export default async function handler(req, res) {
