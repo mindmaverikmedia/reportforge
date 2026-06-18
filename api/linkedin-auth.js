@@ -14,13 +14,16 @@ export default function handler(req, res) {
   // Scopes needed:
   // openid + profile + email -> sign in / identify the user
   // w_member_social -> post to personal profile (needed for Thought Leader Ads)
-  // w_organization_social -> post to the ReportForge AI company page
+  //
+  // NOTE: w_organization_social (company page posting) requires LinkedIn's
+  // separate "Community Management API" product, which needs manual approval.
+  // Apply at: https://www.linkedin.com/developers/apps -> your app -> Products
+  // Once approved, add "w_organization_social" back into the scopes list below.
   const scopes = [
     "openid",
     "profile",
     "email",
     "w_member_social",
-    "w_organization_social",
   ].join(" ");
 
   const state = Math.random().toString(36).substring(2, 15);
