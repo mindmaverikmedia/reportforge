@@ -38,8 +38,8 @@ export default function handler(req, res) {
 
   <label>Publish target</label>
   <select id="target">
-    <option value="company">Company Page (ReportForge AI)</option>
     <option value="personal">Personal Profile (for Thought Leader Ads)</option>
+    <option value="company">Company Page — requires Community Mgmt API approval</option>
   </select>
 
   <button onclick="generate()" id="genBtn">⚡ Generate Draft</button>
