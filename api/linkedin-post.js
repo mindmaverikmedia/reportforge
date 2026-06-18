@@ -20,6 +20,7 @@ export default async function handler(req, res) {
   if (!useExactText && !ANTHROPIC_KEY) return res.status(500).json({ error: "ANTHROPIC_API_KEY not set" });
 
   // ── Step 1: Generate the post content with Claude ──────────────
+  let postText;
   if (useExactText) {
     postText = (topic || "").trim();
     if (!postText) return res.status(400).json({ error: "No text provided to publish" });
