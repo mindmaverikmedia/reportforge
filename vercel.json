@@ -4,5 +4,11 @@
   ],
   "functions": {
     "api/*.js": { "memory": 1024, "maxDuration": 30 }
-  }
+  },
+  "crons": [
+    {
+      "path": "/api/linkedin-cron",
+      "schedule": "0 8 * * 0,2,4"
+    }
+  ]
 }
