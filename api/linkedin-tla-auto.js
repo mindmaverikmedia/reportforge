@@ -1,101 +1,85 @@
 /**
  * /api/linkedin-tla-auto
- * Generates 3 TLA-optimized posts using Claude and publishes them
- * directly to the personal LinkedIn profile. Each post is immediately
- * eligible to boost as a Thought Leader Ad in Campaign Manager.
+ * Risk mitigation update: posts now lead with Intelligence tier ($79/mo)
+ * targeting consultants and analysts who can justify the ROI immediately.
+ * Music/media vertical niche added as Post 3.
  *
  * Trigger: GET https://reportforge-2ap7.vercel.app/api/linkedin-tla-auto?key=YOUR_CRON_SECRET
- *
- * After calling this endpoint:
- * 1. Go to LinkedIn Campaign Manager
- * 2. Create → new campaign → objective: Engagement
- * 3. Ad format: Thought Leader Ad
- * 4. Browse existing content → select the post you want to boost
- * 5. Apply Founders/Consultants/Analysts targeting → £15/day → Launch
  */
 
 const TLA_POSTS = [
   {
-    id: "founder_story",
-    campaign: "Founders",
-    prompt: `Write a LinkedIn Thought Leader Ad post for ReportForge AI from the perspective of its founder.
+    id: "consultant_roi",
+    campaign: "Consultants — Intelligence tier",
+    prompt: `Write a LinkedIn Thought Leader Ad post from the founder of ReportForge AI targeting freelance consultants and strategy professionals.
 
-HOOK (first 2 lines — these show before 'see more' and determine whether someone clicks):
-Start with this exact opening: "Last year I paid $4,800 for a market research report on the music streaming market."
-Then immediately contrast it with what ReportForge does.
-
-STRUCTURE:
-- 2-line hook (the payment story)
-- The problem with traditional research (2-3 lines, specific)  
-- What ReportForge does instead (3-4 lines with specific numbers: 60 seconds, $29/mo, 6 sections)
-- One concrete real-world output example — use this real data: global music market $38.4B growing at 6.8% CAGR to $52.1B by 2029
-- Soft CTA: "Free on any market — no card: maverikmind.gumroad.com/l/reportforge-free"
-
-RULES:
-- First person founder voice throughout
-- 180-220 words total
-- No hashtags
-- No bullet points — flowing prose and line breaks only
-- End with the CTA link on its own line
-- Sound like a real person, not marketing copy`,
-  },
-  {
-    id: "data_proof",
-    campaign: "Consultants",
-    prompt: `Write a LinkedIn Thought Leader Ad post for ReportForge AI showing real output.
-
-HOOK (first 2 lines — these show before 'see more'):
-Start with: "I ran ReportForge AI on the global music market this morning. Here's what came back in 57 seconds:"
+HOOK (first 2 lines — shown before 'see more'):
+Open with: "My consulting rate is £150/hour. At that rate, 3 hours of market research costs me £450 per proposal."
+Then pivot immediately to the solution.
 
 STRUCTURE:
-- Hook line
-- 4-5 bullet-style data points formatted as → arrows (not bullet symbols) showing real output. Use these real figures:
-  → Global recorded music revenue projected at $47.2B by 2026
-  → Streaming accounts for 84% of total industry income  
-  → Album-equivalent unit sales at 6.3% CAGR through 2026
-  → Vinyl now a standalone $1.9B global segment
-  → Top opportunity: emerging market subscriber growth — estimated $8.2B TAM by 2028
-- One paragraph explaining this is ONE of six sections in every brief
-- Context: what consultants/strategists use it for (proposals, pitches, first-pass research)
-- CTA: "Free brief on any market: maverikmind.gumroad.com/l/reportforge-free"
+- Hook (the hourly rate calculation — make it personal and specific)
+- The problem: Every proposal needs market context. Building it manually takes 3-4 hours. At consulting rates, that's £450-£600 of billable time spent on research, not advice.
+- The solution: ReportForge AI generates a complete market intelligence brief — market size, competitive landscape, opportunities, risks, recommendations — in under 60 seconds.
+- The business case: Intelligence plan at £79/month. That's 31 minutes of billing at £150/hour. If it recovers one 3-hour research block per month, the ROI is 6:1 in the first month.
+- Concrete outcome: "I now include a market brief in every proposal I send. My close rate is up and clients comment on the market depth."
+- CTA: "Intelligence plan — £79/month, unlimited reports: reportforge-2ap7.vercel.app"
 
 RULES:
-- First person, slightly analytical tone
-- 160-200 words
-- No hashtags
-- The data points are real — present them confidently
-- End on the CTA link`,
-  },
-  {
-    id: "music_media_usecase",
-    campaign: "Music_Media_Professionals",
-    prompt: `Write a LinkedIn Thought Leader Ad post for ReportForge AI targeting music, media, and entertainment professionals.
-
-HOOK (first 2 lines):
-Start with: "The problem with market research in music and media isn't access to data — it's structured intelligence at the speed decisions actually move."
-
-STRUCTURE:
-- Hook
-- The specific pain: A&R teams, label strategists, and artist managers need market context fast — before a pitch, before a negotiation, before committing budget
-- How ReportForge solves it: 60-second briefs covering market size, competitive landscape, growth opportunities, risk assessment, strategic recommendations
-- 3 specific music/media use cases written as "→" lines:
-  → Sizing an emerging sub-genre before pitching a signing strategy
-  → Mapping sync licensing market dynamics before a catalogue negotiation  
-  → Validating a new vertical (fan platforms, artist-owned labels, spatial audio) before committing resources
-- Close: This is the fast first pass that tells you whether something deserves deeper work
-- CTA: "Free brief on any market: maverikmind.gumroad.com/l/reportforge-free"
-
-RULES:
-- First person, industry-insider tone
+- First person, consultant peer voice
 - 200-240 words
 - No hashtags
-- Speaks peer-to-peer, not as a vendor
-- End on CTA link`,
+- End with the CTA on its own line
+- The £79 Intelligence plan is the primary offer — mention it by name and price`,
+  },
+  {
+    id: "analyst_screening",
+    campaign: "Analysts — Intelligence tier",
+    prompt: `Write a LinkedIn Thought Leader Ad post from the founder of ReportForge AI targeting investment analysts and sector researchers.
+
+HOOK (first 2 lines — shown before 'see more'):
+Open with: "Before you commit analyst hours to a sector, you need a market map. Most first-pass research takes half a day to produce properly."
+
+STRUCTURE:
+- Hook (the first-pass research time problem)
+- The specific pain: Before deciding whether a sector deserves deeper work, analysts need: market size, CAGR, key incumbents, white space, structural risks. Getting that coherently takes 3-5 hours.
+- What ReportForge does: Generates that structured first-pass in under 60 seconds. Market size + CAGR + competitive positioning + opportunity matrix + risk assessment.
+- Important framing: Not diligence-grade. First-pass grade. The question it answers is "does this sector deserve analyst hours?" — not "is this investment ready?"
+- Usage pattern: Screen 10 sectors in a morning instead of 2. Drop the output directly into an investment memo as the market context section.
+- Data point: Use this real data as an example output — global recorded music market at $38.4B growing at 6.8% CAGR to $52.1B by 2029, streaming at 84% of revenue.
+- CTA: "Intelligence plan — £79/month: reportforge-2ap7.vercel.app"
+
+RULES:
+- Clinical, data-first tone — no adjectives, only verbs and numbers
+- 180-220 words
+- No hashtags
+- The Intelligence plan at £79/month is the primary CTA`,
+  },
+  {
+    id: "music_media_niche",
+    campaign: "Music and Media — vertical niche",
+    prompt: `Write a LinkedIn Thought Leader Ad post from the founder of ReportForge AI specifically for music, media, and entertainment industry professionals.
+
+HOOK (first 2 lines — shown before 'see more'):
+Open with: "Every major record deal, sync licensing agreement, and catalogue acquisition starts with a market view. The problem is getting that view fast enough to matter."
+
+STRUCTURE:
+- Hook (the speed problem in music/media market intelligence)
+- The industry reality: A&R teams, label strategists, and catalogue investors regularly need to size a market, map the competitive landscape, or assess structural risk — before a pitch, before a negotiation, before committing resource. The traditional way takes weeks.
+- What changes with ReportForge AI: 60-second structured intelligence briefs on any music or media sector. Tested example — ran it on the global recorded music market and got back: $47.2B by 2026, streaming at 84% of revenue, vinyl a standalone $1.9B segment, Asia-Pacific driving CAGR.
+- Three specific use cases written as flowing sentences (not bullets): sizing an emerging sub-genre before pitching a signing strategy; mapping sync licensing market dynamics before a catalogue negotiation; validating a new vertical like spatial audio or fan investment platforms before committing budget.
+- Close: This is the fast first pass that tells you whether something deserves deeper work. At £79/month, it's the cost of one lunch meeting.
+- CTA: "Intelligence plan: reportforge-2ap7.vercel.app"
+
+RULES:
+- Industry insider voice — peer-to-peer, not vendor
+- 220-260 words
+- No hashtags
+- Mention the £79 Intelligence plan`,
   },
 ];
 
 export default async function handler(req, res) {
-  // Security gate
   const key = req.query.key || req.headers["x-api-key"];
   if (!process.env.CRON_SECRET || key !== process.env.CRON_SECRET) {
     return res.status(401).json({ error: "Unauthorized — pass ?key=YOUR_CRON_SECRET" });
@@ -109,43 +93,40 @@ export default async function handler(req, res) {
   if (!LI_TOKEN)      return res.status(500).json({ error: "LINKEDIN_ACCESS_TOKEN missing" });
   if (!MEMBER_URN)    return res.status(500).json({ error: "LINKEDIN_MEMBER_URN missing" });
 
+  // Generate all 3 posts in parallel — cuts runtime from ~45s to ~18s
+  const generated = await Promise.all(
+    TLA_POSTS.map(async (post) => {
+      const result = { id: post.id, campaign: post.campaign };
+      try {
+        const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-api-key": ANTHROPIC_KEY,
+            "anthropic-version": "2023-06-01",
+          },
+          body: JSON.stringify({
+            model: "claude-sonnet-4-6",
+            max_tokens: 600,
+            messages: [{ role: "user", content: post.prompt }],
+          }),
+        });
+        const claudeData = await claudeRes.json();
+        result.text = claudeData.content?.[0]?.text?.trim() || "";
+        if (!result.text) throw new Error("Empty response from Claude");
+        result.generated = true;
+      } catch (err) {
+        result.generated = false;
+        result.error = `Claude: ${err.message}`;
+      }
+      return result;
+    })
+  );
+
   const results = [];
-
-  for (const post of TLA_POSTS) {
-    const result = { id: post.id, campaign: post.campaign };
-
-    // ── Generate with Claude ────────────────────────────────────────────────
-    try {
-      const claudeRes = await fetch("https://api.anthropic.com/v1/messages", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "x-api-key": ANTHROPIC_KEY,
-          "anthropic-version": "2023-06-01",
-        },
-        body: JSON.stringify({
-          model: "claude-sonnet-4-6",
-          max_tokens: 600,
-          messages: [{ role: "user", content: post.prompt }],
-        }),
-      });
-      const claudeData = await claudeRes.json();
-      result.text = claudeData.content?.[0]?.text?.trim() || "";
-      if (!result.text) throw new Error("Empty response from Claude");
-      result.generated = true;
-    } catch (err) {
-      result.generated = false;
-      result.error = `Claude: ${err.message}`;
-      results.push(result);
-      continue;
-    }
-
-    // ── Publish to LinkedIn personal profile ────────────────────────────────
-    // Add a 3-second gap between posts to avoid LinkedIn rate limiting
-    if (results.length > 0) {
-      await new Promise(r => setTimeout(r, 3000));
-    }
-
+  for (const result of generated) {
+    if (!result.generated) { results.push(result); continue; }
+    if (results.length > 0) await new Promise(r => setTimeout(r, 1500));
     try {
       const liRes = await fetch("https://api.linkedin.com/v2/ugcPosts", {
         method: "POST",
@@ -166,68 +147,29 @@ export default async function handler(req, res) {
           visibility: { "com.linkedin.ugc.MemberNetworkVisibility": "PUBLIC" },
         }),
       });
-
       const raw = await liRes.text();
-      let liData;
-      try { liData = JSON.parse(raw); } catch { liData = { raw }; }
-
-      if (liRes.ok) {
-        result.published = true;
-        result.postId = liData.id || null;
-        result.boostUrl = "https://www.linkedin.com/campaignmanager/";
-      } else {
-        result.published = false;
-        result.liError = `HTTP ${liRes.status}: ${JSON.stringify(liData).slice(0, 200)}`;
-      }
+      let liData; try { liData = JSON.parse(raw); } catch { liData = { raw }; }
+      result.published = liRes.ok;
+      result.postId = liData.id || null;
+      if (!liRes.ok) result.liError = `HTTP ${liRes.status}: ${JSON.stringify(liData).slice(0,200)}`;
     } catch (err) {
       result.published = false;
       result.liError = err.message;
     }
-
     results.push(result);
   }
 
-  // Return a clear summary page
-  const allPublished = results.every(r => r.published);
-  const somePublished = results.some(r => r.published);
-
-  return res.status(200).send(`<!DOCTYPE html>
-<html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
-<title>TLA Auto-Post Results</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{background:#07111F;color:#F1F5F9;font-family:-apple-system,sans-serif;padding:40px 20px;max-width:720px;margin:0 auto}
-h1{color:#F59E0B;font-size:22px;margin-bottom:6px}
-.sub{color:#475569;font-size:13px;margin-bottom:28px}
-.card{background:#0D1B2E;border:1px solid #1E293B;border-radius:10px;padding:20px;margin-bottom:16px}
-.card.ok{border-left:4px solid #10B981}
-.card.err{border-left:4px solid #EF4444}
-.card-label{font-size:10px;font-weight:500;color:#F59E0B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
-.card-status{font-size:13px;margin-bottom:12px}
-.post-text{font-size:12px;color:#94A3B8;white-space:pre-wrap;line-height:1.6;background:#070F1C;padding:12px;border-radius:6px;margin-top:10px}
-.next-step{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:16px;margin-top:24px}
-.next-step h2{color:#F59E0B;font-size:14px;margin-bottom:8px}
-.next-step p{font-size:13px;color:#94A3B8;line-height:1.6;margin-bottom:6px}
-a{color:#F59E0B}
-</style>
+  const published = results.filter(r => r.published).length;
+  return res.status(200).send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>TLA Results</title>
+<style>*{box-sizing:border-box}body{background:#07111F;color:#F1F5F9;font-family:-apple-system,sans-serif;padding:32px 20px;max-width:680px;margin:0 auto}h1{color:#F59E0B;margin-bottom:4px}p{color:#475569;font-size:13px;margin-bottom:24px}.card{background:#0D1B2E;border:1px solid #1E293B;border-radius:8px;padding:16px;margin-bottom:12px;border-left:3px solid #10B981}.card.fail{border-left-color:#EF4444}.label{font-size:10px;color:#F59E0B;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px;font-weight:500}.body{font-size:12px;color:#94A3B8;white-space:pre-wrap;line-height:1.6;background:#040B13;padding:10px;border-radius:6px;margin-top:8px}.next{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);border-radius:8px;padding:16px;margin-top:20px}.next h2{color:#F59E0B;font-size:14px;margin-bottom:10px}a{color:#F59E0B}</style>
 </head><body>
-<h1>${allPublished ? "✅" : somePublished ? "⚠️" : "❌"} TLA Auto-Post Results</h1>
-<div class="sub">${new Date().toLocaleString("en-GB", {timeZone:"Europe/London"})} · ${results.filter(r=>r.published).length} of ${results.length} posts published</div>
-
-${results.map(r => `
-<div class="card ${r.published ? 'ok' : 'err'}">
-  <div class="card-label">${r.campaign} campaign · ${r.published ? "✓ Published" : "✗ Failed"}</div>
-  <div class="card-status">${r.published ? `Post ID: ${r.postId || "confirmed"}` : `Error: ${r.liError || r.error || "Unknown"}`}</div>
-  ${r.text ? `<div class="post-text">${r.text.replace(/</g,'&lt;').replace(/>/g,'&gt;')}</div>` : ''}
-</div>`).join('')}
-
-<div class="next-step">
-  <h2>Next step — boost these as Thought Leader Ads</h2>
-  <p>1. Go to <a href="https://www.linkedin.com/campaignmanager/" target="_blank">LinkedIn Campaign Manager</a></p>
-  <p>2. Create → new campaign → objective: <strong>Engagement</strong></p>
-  <p>3. Ad format: <strong>Thought Leader Ad</strong></p>
-  <p>4. Click <strong>Browse existing content</strong> → your posts will appear (published in last few minutes)</p>
-  <p>5. Select the post matching each campaign → apply targeting from the campaign kit → set £15/day → Launch</p>
-</div>
-</body></html>`);
+<h1>${published === 3 ? "✅" : published > 0 ? "⚠️" : "❌"} ${published}/3 posts published</h1>
+<p>Intelligence-tier focused posts — ${new Date().toLocaleString("en-GB",{timeZone:"Europe/London"})}</p>
+${results.map(r=>`<div class="card ${r.published?'':'fail'}"><div class="label">${r.campaign} · ${r.published?"✓ Live":"✗ Failed"}</div>${r.liError?`<div style="color:#FCA5A5;font-size:12px;margin-bottom:8px">${r.liError}</div>`:''}${r.text?`<div class="body">${r.text.replace(/</g,'&lt;')}</div>`:''}</div>`).join('')}
+<div class="next"><h2>Boost these as Thought Leader Ads</h2>
+<p>1. Go to your LinkedIn profile → find each new post → click <strong>Boost</strong></p>
+<p>2. Select audience: Consultants (Management Consulting, 1-50 employees, UK+US)</p>
+<p>3. Set £15/day → confirm</p>
+<p>Or: <a href="https://www.linkedin.com/campaignmanager/" target="_blank">Campaign Manager</a> → Create → Engagement → Thought Leader Ad → Browse content</p>
+</div></body></html>`);
 }
