@@ -1,14 +1,29 @@
+
 {
   "rewrites": [
-    { "source": "/api/(.*)", "destination": "/api/$1" }
+    {
+      "source": "/api/(.*)",
+      "destination": "/api/$1"
+    }
   ],
   "functions": {
-    "api/*.js": { "memory": 1024, "maxDuration": 30 }
+    "api/*.js": {
+      "memory": 1024,
+      "maxDuration": 30
+    },
+    "api/linkedin-tla-auto.js": {
+      "memory": 1024,
+      "maxDuration": 60
+    }
   },
   "crons": [
     {
       "path": "/api/linkedin-cron",
       "schedule": "0 8 * * 0,2,4"
+    },
+    {
+      "path": "/api/email-drip",
+      "schedule": "30 8 * * *"
     }
   ]
 }
