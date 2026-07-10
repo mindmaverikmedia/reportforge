@@ -55,7 +55,7 @@ export default async function handler(req, res) {
           Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
         },
         body: JSON.stringify({
-          from: "ReportForge AI <onboarding@resend.dev>",
+          from: "ReportForge AI <hello@mindmaverikmedia.com>",
           to: [email],
           subject: EMAIL_1.subject,
           html: EMAIL_1.html.replace("{{firstName}}", firstName || "there"),
