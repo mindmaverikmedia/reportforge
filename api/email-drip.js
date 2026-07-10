@@ -153,7 +153,7 @@ export default async function handler(req, res) {
           Authorization: `Bearer ${RESEND_KEY}`,
         },
         body: JSON.stringify({
-          from: "ReportForge AI <onboarding@resend.dev>",
+          from: "ReportForge AI <hello@mindmaverikmedia.com>",
           to: [sub.email],
           subject: nextEmail.subject,
           html,
