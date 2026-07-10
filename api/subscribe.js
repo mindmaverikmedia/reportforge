@@ -56,6 +56,7 @@ export default async function handler(req, res) {
         },
         body: JSON.stringify({
           from: "ReportForge AI <hello@mindmaverikmedia.com>",
+          reply_to: "admin@mindmaverikmedia.com",
           to: [email],
           subject: EMAIL_1.subject,
           html: EMAIL_1.html.replace("{{firstName}}", firstName || "there"),
