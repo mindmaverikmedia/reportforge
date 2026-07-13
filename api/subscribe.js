@@ -1,18 +1,10 @@
 /**
  * /api/subscribe
- * Free-tier email drip without ConvertKit.
+ * v3 — adds a browser-visible diagnostic mode and honest error reporting.
  *
- * OPTION A (recommended — zero cost, no platform): Resend + Upstash Redis
- *   Sends Email 1 immediately via Resend. Stores subscriber in Upstash KV.
- *   The /api/email-drip cron (running daily) sends emails 2-5 automatically.
- *   Required env vars: RESEND_API_KEY, UPSTASH_REDIS_REST_URL, UPSTASH_REDIS_REST_TOKEN
- *
- * OPTION B (simpler UI — EmailOctopus free plan): add subscriber to list,
- *   EmailOctopus automation handles the drip sequence.
- *   Required env vars: EMAILOCTOPUS_API_KEY, EMAILOCTOPUS_LIST_ID
- *
- * The handler auto-detects which option is configured based on env vars present.
- * If both are set, Option A (Resend) takes priority.
+ * DIAGNOSTIC: open this URL in a browser to see exactly which env vars
+ * the function can see (values masked):
+ *   https://reportforge-2ap7.vercel.app/api/subscribe?diag=1
  */
 
 const EMAIL_1 = {
@@ -30,11 +22,31 @@ const EMAIL_1 = {
 </div>`
 };
 
+const mask = (v) => (v ? `${v.slice(0, 7)}…${v.slice(-4)} (len ${v.length})` : null);
+
 export default async function handler(req, res) {
   res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
+  res.setHeader("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
   res.setHeader("Access-Control-Allow-Headers", "Content-Type");
   if (req.method === "OPTIONS") return res.status(200).end();
+
+  // ─── DIAGNOSTIC MODE — GET ?diag=1 ─────────────────────────────────────
+  if (req.method === "GET") {
+    if (req.query.diag !== "1") return res.status(405).json({ error: "POST only (or GET ?diag=1)" });
+    const rk = process.env.RESEND_API_KEY || "";
+    return res.status(200).json({
+      diagnostics: {
+        RESEND_API_KEY: rk ? mask(rk) : "❌ NOT VISIBLE",
+        RESEND_KEY_HAS_WHITESPACE: rk !== rk.trim() ? "⚠️ YES — re-save without spaces/newlines" : "no",
+        RESEND_KEY_STARTS_CORRECTLY: rk.startsWith("re_") ? "yes" : "❌ NO — should start with re_",
+        UPSTASH_REDIS_REST_URL: process.env.UPSTASH_REDIS_REST_URL ? mask(process.env.UPSTASH_REDIS_REST_URL) : "❌ NOT VISIBLE",
+        UPSTASH_URL_FORMAT: (process.env.UPSTASH_REDIS_REST_URL || "").startsWith("https://") ? "yes" : "❌ must start with https://",
+        UPSTASH_REDIS_REST_TOKEN: process.env.UPSTASH_REDIS_REST_TOKEN ? mask(process.env.UPSTASH_REDIS_REST_TOKEN) : "❌ NOT VISIBLE",
+        deployment: process.env.VERCEL_GIT_COMMIT_SHA ? process.env.VERCEL_GIT_COMMIT_SHA.slice(0, 7) : "unknown",
+      }
+    });
+  }
+
   if (req.method !== "POST") return res.status(405).json({ error: "POST only" });
 
   const { email, firstName = "", source = "landing_page" } = req.body;
@@ -42,85 +54,63 @@ export default async function handler(req, res) {
     return res.status(400).json({ error: "Valid email required" });
   }
 
+  const RESEND_KEY = (process.env.RESEND_API_KEY || "").trim();
+
+  // ─── HONEST FAILURE: no provider = explicit error, not silent success ──
+  if (!RESEND_KEY) {
+    return res.status(500).json({
+      error: "Email provider not configured — RESEND_API_KEY is not visible to this function. Check Vercel env vars and redeploy.",
+    });
+  }
+
   const results = {};
 
-  // ─── OPTION A: Resend + Upstash ─────────────────────────────────────────
-  if (process.env.RESEND_API_KEY) {
-    // Send Email 1 immediately
-    try {
-      const sendRes = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${process.env.RESEND_API_KEY}`,
-        },
-        body: JSON.stringify({
-          from: "ReportForge AI <hello@mindmaverikmedia.com>",
-          reply_to: "admin@mindmaverikmedia.com",
-          to: [email],
-          subject: EMAIL_1.subject,
-          html: EMAIL_1.html.replace("{{firstName}}", firstName || "there"),
-        }),
+  // Send Email 1 via Resend
+  try {
+    const sendRes = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${RESEND_KEY}`,
+      },
+      body: JSON.stringify({
+        from: "ReportForge AI <hello@mindmaverikmedia.com>",
+        reply_to: "mindmaverikmedia@gmail.com",
+        to: [email],
+        subject: EMAIL_1.subject,
+        html: EMAIL_1.html.replace("{{firstName}}", firstName || "there"),
+      }),
+    });
+    const sendData = await sendRes.json();
+    if (!sendRes.ok) {
+      // Surface the real Resend error to the page
+      return res.status(502).json({
+        error: `Resend rejected the send (HTTP ${sendRes.status}): ${sendData.message || JSON.stringify(sendData)}`,
       });
-      const sendData = await sendRes.json();
-      results.email1 = sendRes.ok ? "sent" : `error: ${sendData.message}`;
-    } catch (err) {
-      results.email1 = `failed: ${err.message}`;
     }
-
-    // Store subscriber in Upstash for the drip cron to pick up
-    if (process.env.UPSTASH_REDIS_REST_URL && process.env.UPSTASH_REDIS_REST_TOKEN) {
-      try {
-        const key = `sub:${email.toLowerCase().replace(/[^a-z0-9@._-]/g, "")}`;
-        const value = JSON.stringify({
-          email, firstName, source,
-          signupAt: Date.now(),
-          emailsSent: 1,
-        });
-        await fetch(
-          `${process.env.UPSTASH_REDIS_REST_URL}/set/${encodeURIComponent(key)}/${encodeURIComponent(value)}`,
-          { headers: { Authorization: `Bearer ${process.env.UPSTASH_REDIS_REST_TOKEN}` } }
-        );
-        results.stored = "upstash";
-      } catch (err) {
-        results.stored = `upstash_error: ${err.message}`;
-      }
-    }
-
-    return res.status(200).json({ success: true, method: "resend", ...results });
+    results.email1 = "sent";
+    results.resendId = sendData.id || null;
+  } catch (err) {
+    return res.status(502).json({ error: `Resend request failed: ${err.message}` });
   }
 
-  // ─── OPTION B: EmailOctopus ──────────────────────────────────────────────
-  if (process.env.EMAILOCTOPUS_API_KEY && process.env.EMAILOCTOPUS_LIST_ID) {
+  // Store subscriber in Upstash for the drip cron
+  const R_URL = (process.env.UPSTASH_REDIS_REST_URL || "").trim();
+  const R_TOK = (process.env.UPSTASH_REDIS_REST_TOKEN || "").trim();
+  if (R_URL && R_TOK) {
     try {
-      const eoRes = await fetch(
-        `https://emailoctopus.com/api/1.6/lists/${process.env.EMAILOCTOPUS_LIST_ID}/contacts`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            api_key: process.env.EMAILOCTOPUS_API_KEY,
-            email_address: email,
-            fields: { FirstName: firstName },
-            tags: ["reportforge-signup", source],
-            status: "SUBSCRIBED",
-          }),
-        }
-      );
-      const eoData = await eoRes.json();
-      results.emailoctopus = eoRes.ok
-        ? "subscribed"
-        : `error: ${eoData.error?.message || JSON.stringify(eoData)}`;
+      const key = `sub:${email.toLowerCase().replace(/[^a-z0-9@._-]/g, "")}`;
+      const value = JSON.stringify({ email, firstName, source, signupAt: Date.now(), emailsSent: 1 });
+      await fetch(`${R_URL}/set/${encodeURIComponent(key)}/${encodeURIComponent(value)}`, {
+        headers: { Authorization: `Bearer ${R_TOK}` },
+      });
+      results.stored = "upstash";
     } catch (err) {
-      results.emailoctopus = `failed: ${err.message}`;
+      results.stored = `upstash_error: ${err.message}`;
     }
-    return res.status(200).json({ success: true, method: "emailoctopus", ...results });
+  } else {
+    results.stored = "skipped — Upstash env vars not visible";
   }
 
-  // ─── No email provider configured ────────────────────────────────────────
-  return res.status(200).json({
-    success: true,
-    method: "none",
-    note: "No email provider configured. Add RESEND_API_KEY (recommended) or EMAILOCTOPUS_API_KEY + EMAILOCTOPUS_LIST_ID to Vercel env vars.",
-  });
+  return res.status(200).json({ success: true, method: "resend", ...results });
 }
